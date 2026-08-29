@@ -115,8 +115,14 @@ async function processStreamerRow(row: StreamerConfig): Promise<CycleFailure | n
         // Compare against the previous cycle's status *before* overwriting
         // it, so a stream that's still live from last cycle doesn't fire
         // the webhook again — only the actual off→on transition should.
+        // `previous === null` means this streamer has never been observed
+        // this process lifetime (first cycle after a restart) — that's a
+        // baseline snapshot, not a transition, so it must NOT notify even
+        // if they happen to already be live: broadcastStatus resets on every
+        // restart, and without this check a restart during a broadcast
+        // would wrongly re-fire "방송 시작" for every streamer already live.
         const previous = getBroadcastStatus(row.name);
-        const justWentLive = status.isLive && !previous?.isLive;
+        const justWentLive = status.isLive && previous !== null && !previous.isLive;
 
         setBroadcastStatus(row.name, status);
 
