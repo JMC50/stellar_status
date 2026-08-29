@@ -66,7 +66,13 @@ async function captureChannelPage(channelId: string): Promise<CapturedResponses>
                 if (!response.ok()) return;
                 const url = response.url();
                 try {
-                    if (url.includes(`/channels/${channelId}/live-detail`)) {
+                    // chzzk renamed/moved this from .../live-detail to
+                    // .../polling/v3.1/.../live-status at some point --
+                    // response shape (content.status/liveTitle/openDate) is
+                    // unchanged, only the URL moved. Matching on the tail
+                    // ("live-status") rather than a full path keeps this
+                    // resilient to the versioned "polling/v3.1" prefix.
+                    if (url.includes(`/channels/${channelId}/live-status`)) {
                         captured.liveDetail = await response.json();
                         maybeDone();
                     } else if (url.includes(`/channels/${channelId}/videos`)) {
