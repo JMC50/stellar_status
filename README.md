@@ -8,6 +8,7 @@
 - 라이브 중이면 라이브 정보를, 아니면 가장 최근 다시보기 정보를 저장합니다.
 - 등록된 전체 스트리머를 순서대로 한 바퀴(cycle) 조회한 뒤, 일정 시간 대기하고 다시 반복합니다.
 - 수집한 상태는 메모리에 저장되며, Express API로 조회할 수 있습니다.
+- 어떤 스트리머가 오프라인 → 라이브로 전환되는 순간을 감지하면(계속 라이브 상태 유지는 해당 없음), `STELINFO_WEBHOOK_URL`로 웹훅을 한 번 보냅니다. 실패해도 폴링 루프에는 영향 없습니다.
 
 ## 요구 사항
 
@@ -33,6 +34,8 @@ cp .env.example .env
 | --- | --- | --- | --- |
 | `PORT` | 예 | - | HTTP 서버가 열릴 포트 |
 | `STELLAR_STATUS_STARTUP_DELAY_MS` | 아니오 | `5000` | 첫 폴링 순환 시작 전 대기 시간(ms), 0~120000 범위 밖이면 기본값 사용 |
+| `STELINFO_WEBHOOK_URL` | 아니오 | - | 스트리머가 오프라인→라이브로 전환될 때 POST할 [stelinfo](https://github.com/JMC50/stellog-demo) 웹훅 주소. 둘 중 하나라도 없으면 웹훅 기능이 조용히 비활성화됨 |
+| `STELINFO_WEBHOOK_SECRET` | 아니오 | - | 위 요청의 `X-Webhook-Secret` 헤더 값. stelinfo 쪽 설정과 동일해야 함 |
 
 ## 실행
 

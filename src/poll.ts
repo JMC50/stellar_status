@@ -1,6 +1,7 @@
 import { STREAMERS, type StreamerConfig } from "./streamers";
 import { captureBroadcastStatus } from "./chzzkCapture";
-import { markCycleComplete, setBroadcastStatus } from "./broadcastStore";
+import { getBroadcastStatus, markCycleComplete, setBroadcastStatus } from "./broadcastStore";
+import { notifyBroadcastStarted } from "./webhook";
 
 const POLL_INTERVAL_MS = 3 * 60 * 1000;
 const BETWEEN_REQUESTS_MS = 1_500;
@@ -110,7 +111,19 @@ async function processStreamerRow(row: StreamerConfig): Promise<CycleFailure | n
         if (!status) {
             return fail(row, "no live/video data found");
         }
+
+        // Compare against the previous cycle's status *before* overwriting
+        // it, so a stream that's still live from last cycle doesn't fire
+        // the webhook again — only the actual off→on transition should.
+        const previous = getBroadcastStatus(row.name);
+        const justWentLive = status.isLive && !previous?.isLive;
+
         setBroadcastStatus(row.name, status);
+
+        if (justWentLive) {
+            notifyBroadcastStarted(row.name, status);
+        }
+
         return null;
     } catch (err) {
         return fail(row, err instanceof Error ? err.message : String(err));
