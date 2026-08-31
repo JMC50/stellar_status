@@ -30,6 +30,8 @@ export function notifyBroadcastStarted(stellarId: string, status: BroadcastStatu
         return;
     }
 
+    console.log(`[stellar_status][webhook] ${stellarId} 방송 시작 감지 — 웹훅 전송 시도 (${WEBHOOK_URL})`);
+
     fetch(WEBHOOK_URL, {
         method: "POST",
         headers: {
@@ -45,7 +47,9 @@ export function notifyBroadcastStarted(stellarId: string, status: BroadcastStatu
         signal: AbortSignal.timeout(WEBHOOK_TIMEOUT_MS)
     })
         .then((res) => {
-            if (!res.ok) {
+            if (res.ok) {
+                console.log(`[stellar_status][webhook] ${stellarId} 웹훅 전송 성공 (${res.status})`);
+            } else {
                 logError(`webhook ${stellarId}`, `stelinfo responded ${res.status}`);
             }
         })

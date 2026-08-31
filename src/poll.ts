@@ -124,6 +124,17 @@ async function processStreamerRow(row: StreamerConfig): Promise<CycleFailure | n
         const previous = getBroadcastStatus(row.name);
         const justWentLive = status.isLive && previous !== null && !previous.isLive;
 
+        // Debug visibility for the transition decision itself -- only logged
+        // while actually live, so this doesn't spam every offline streamer
+        // every cycle.
+        if (status.isLive) {
+            console.log(
+                `[stellar_status][live] ${row.name} isLive=true, previous=${
+                    previous === null ? "null(첫 관측)" : previous.isLive ? "live" : "offline"
+                }, justWentLive=${justWentLive}`
+            );
+        }
+
         setBroadcastStatus(row.name, status);
 
         if (justWentLive) {
