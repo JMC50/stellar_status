@@ -1,5 +1,4 @@
-import path from "node:path";
-import dotenv from "dotenv";
+import "./env";
 import express from "express";
 import { STREAMERS } from "./streamers";
 import { getBroadcastStatus, getLastUpdatedAt } from "./broadcastStore";
@@ -11,8 +10,6 @@ import {
     getStartupDelayBeforeFirstCycleMs
 } from "./poll";
 import { closeBrowser } from "./chzzkCapture";
-
-dotenv.config({ path: path.resolve(__dirname, "..", ".env") });
 
 function logError(context: string, err: unknown): void {
     const msg = err instanceof Error ? err.message : String(err);
